@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const app = express();
 const PORT = 9000;
 
-mongoose.connect('mongodb://vseriousv:social123@localhost:27017/aidaprint', { useMongoClient: true });
+mongoose.connect('mongodb://vseriousv:social123@localhost:27017/aidaprint', { useNewUrlParser: true });
 
 app.use('/graphql', graphqlHTTP({
     schema,

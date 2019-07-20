@@ -1,10 +1,41 @@
 const graphql = require('graphql');
 
-const { GraphQLObjectType, GraphQLString, GraphQLSchema, GraphQLID, GraphQLInt, GraphQLList, GraphQLNonNull} = graphql;
+const { GraphQLObjectType, GraphQLString, GraphQLSchema, GraphQLID, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLBoolean} = graphql;
 
 const Users = require('../models/users');
 const Articles = require('../models/articles');
+const Contacts = require('../models/contacts');
+const ComponentNavbar = require('../models/component_navbar');
+const Sections = require('../models/sections');
+const Pages = require('../models/pages');
 
+//КОЛЛЕКЦИЯ СТРАНИЦ САЙТА
+const PagesType = new GraphQLObjectType({
+    name: 'Pages',
+    fields: () => ({
+        id: {type: GraphQLID},
+        name: {type: new GraphQLNonNull(GraphQLString)},
+        text: {type: new GraphQLNonNull(GraphQLString)},
+        sectionID: {type: new GraphQLNonNull(GraphQLString)},
+        url: {type: new GraphQLNonNull(GraphQLString)}
+    })
+});
+//КОЛЛЕКЦИЯ РАЗДЕЛОВ САЙТА
+const SectionsType = new GraphQLObjectType({
+    name: 'Sections',
+    fields: () => ({
+        id: {type: GraphQLID},
+        name: {type: new GraphQLNonNull(GraphQLString)},
+        viewMagaMenu: {type: new GraphQLNonNull(GraphQLBoolean)},
+        pages: {
+            type: new GraphQLList(PagesType),
+            resolve(parent, args) {
+                return Pages.find({ sectionID: parent.id });
+            }
+        }
+    })
+});
+//КОЛЛЕКЦИЯ ПОЛЬЗОВАТЕЛЕЙ
 const UsersType = new GraphQLObjectType({
     name: 'Users',
     fields: () => ({
@@ -14,13 +45,12 @@ const UsersType = new GraphQLObjectType({
         articles: {
             type: new GraphQLList(ArticlesType),
             resolve(parent, args) {
-                //return articles.filter(article => article.authorID == parent.id);
                 return Articles.find({ authorID: parent.id });
             }
         }
     })
 });
-
+//КОЛЛЕКЦИЯ СТАТЕЙ
 const ArticlesType = new GraphQLObjectType({
     name: 'Articles',
     fields: () => ({
@@ -30,10 +60,41 @@ const ArticlesType = new GraphQLObjectType({
         author: {
             type: UsersType,
             resolve(parent, args){
-               // return users.find(user => user.id == parent.id)
                return Users.findById(parent.authorID);
             }
         }
+    }),
+});
+//КОЛЛЕКЦИЯ КОНТАКТОВ
+const ContactsType = new GraphQLObjectType({
+    name: 'Contacts',
+    fields: () => ({
+        id: {type: GraphQLID},
+        title: {type: new GraphQLNonNull(GraphQLString)},
+        type: {type: new GraphQLNonNull(GraphQLString)},
+        context_1: {type: new GraphQLNonNull(GraphQLString)},
+        context_2: {type: new GraphQLNonNull(GraphQLString)}
+    })
+});
+//КОЛЛЕКЦИЯ КОМПОНЕНТОВ
+const ComponentNavbarType = new GraphQLObjectType({
+    name: 'components',
+    fields: () => ({
+        id: {type: GraphQLID},
+        name: {type: new GraphQLNonNull(GraphQLString)},
+        menu_items: {
+            type: new GraphQLList(NavbarType)
+        }
+    }),
+});
+//ТИП NAVBAR
+const NavbarType = new GraphQLObjectType({
+    name: 'navbar',
+    fields: () => ({
+        id: {type: new GraphQLNonNull(GraphQLString)},
+        name: {type: new GraphQLNonNull(GraphQLString)},
+        child: {type: new GraphQLNonNull(GraphQLString)},
+        link: {type: new GraphQLNonNull(GraphQLString)}
     }),
 });
 
@@ -120,6 +181,18 @@ const Mutation = new GraphQLObjectType({
 const Query = new GraphQLObjectType({
     name: 'Query',
     fields: () => ({
+        pages: {
+            type: new GraphQLList(PagesType),
+            resolve(parent, args) {
+                return Pages.find({});
+            }
+        },
+        sections: {
+            type: new GraphQLList(SectionsType),
+            resolve(parent, args) {
+                return Sections.find({});
+            }
+        },
         user: {
             type: UsersType,
             args: { id: { type: GraphQLID } },
@@ -144,6 +217,18 @@ const Query = new GraphQLObjectType({
             type: new GraphQLList(ArticlesType),
             resolve(parent, args) {
                 return Articles.find({});
+            }
+        },
+        contacts: {
+            type: new GraphQLList(ContactsType),
+            resolve(parent, args) {
+                return Contacts.find({});
+            }
+        },
+        componentNavbar: {
+            type: new GraphQLList(ComponentNavbarType),
+            resolve(parent,args) {
+                return ComponentNavbar.find({});
             }
         }
     })

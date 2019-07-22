@@ -32,7 +32,7 @@ const SectionsType = new GraphQLObjectType({
             resolve(parent, args) {
                 return Pages.find({ sectionID: parent.id });
             }
-        }
+        } 
     })
 });
 //КОЛЛЕКЦИЯ ПОЛЬЗОВАТЕЛЕЙ
@@ -147,7 +147,7 @@ const Mutation = new GraphQLObjectType({
         },
         updateUser: {
             type: UsersType,
-            args: { 
+            args: {
                 id: { type: GraphQLID },
                 firstName: {type: new GraphQLNonNull(GraphQLString) },
                 lastName: {type: new GraphQLNonNull(GraphQLString) },
@@ -162,7 +162,7 @@ const Mutation = new GraphQLObjectType({
         },
         updateArticle: {
             type: ArticlesType,
-            args: { 
+            args: {
                 id: { type: GraphQLID },
                 title: {type: new GraphQLNonNull(GraphQLString) },
                 description: {type: new GraphQLNonNull(GraphQLString) },

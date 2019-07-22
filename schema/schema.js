@@ -32,7 +32,7 @@ const SectionsType = new GraphQLObjectType({
             resolve(parent, args) {
                 return Pages.find({ sectionID: parent.id });
             }
-        } 
+        }  
     })
 });
 //КОЛЛЕКЦИЯ ПОЛЬЗОВАТЕЛЕЙ

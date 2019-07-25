@@ -8,7 +8,30 @@ const Contacts = require('../models/contacts');
 const ComponentNavbar = require('../models/component_navbar');
 const Sections = require('../models/sections');
 const Pages = require('../models/pages');
-
+const Slidermp = require('../models/slidermp');
+const Test = require('../models/test');
+//ТЕСТИРОВАНИЕ
+const TestType = new GraphQLObjectType({
+    name: 'Test',
+    fields: () => ({
+        id: {type: GraphQLID},
+        name: {type: new GraphQLNonNull(GraphQLString)},
+        last: {type: new GraphQLNonNull(GraphQLString)}
+    })
+});
+//КОЛЛЕКЦИЯ СЛАЙДОВ ГЛАВНОЙ СТРАНИЦЫ
+const SlidermpType = new GraphQLObjectType({
+    name: 'Slidermp',
+    fields: () => ({
+        id: {type: GraphQLID},
+        name: {type: new GraphQLNonNull(GraphQLString)},
+        image: {type: new GraphQLNonNull(GraphQLString)},
+        FirstHeader: {type: new GraphQLNonNull(GraphQLString)},
+        SecondHeader: {type: new GraphQLNonNull(GraphQLString)},
+        button: {type: new GraphQLNonNull(GraphQLString)},
+        url: {type: new GraphQLNonNull(GraphQLString)}
+    })
+});
 //КОЛЛЕКЦИЯ СТРАНИЦ САЙТА
 const PagesType = new GraphQLObjectType({
     name: 'Pages',
@@ -32,7 +55,7 @@ const SectionsType = new GraphQLObjectType({
             resolve(parent, args) {
                 return Pages.find({ sectionID: parent.id });
             }
-        }  
+        }
     })
 });
 //КОЛЛЕКЦИЯ ПОЛЬЗОВАТЕЛЕЙ
@@ -101,6 +124,24 @@ const NavbarType = new GraphQLObjectType({
 const Mutation = new GraphQLObjectType({
     name: 'Mutattion',
     fields: {
+      addPages:{
+        type: PagesType,
+        args: {
+          name: {type: new GraphQLNonNull(GraphQLString)},
+          text: {type: new GraphQLNonNull(GraphQLString)},
+          sectionID: {type: new GraphQLNonNull(GraphQLString)},
+          url: {type: new GraphQLNonNull(GraphQLString)}
+        },
+        resolve(parent, args) {
+          const page = new Pages({
+            name: args.name,
+            text: args.text,
+            sectionID: args.sectionID,
+            url: args.url,
+          });
+          return page.save();
+        }
+      },
         addUser: {
             type: UsersType,
             args: {
@@ -145,6 +186,23 @@ const Mutation = new GraphQLObjectType({
                 return Articles.findByIdAndRemove(args.id);
             }
         },
+        updatePage:{
+          type: PagesType,
+          args: {
+            id: { type: GraphQLID },
+            name: {type: new GraphQLNonNull(GraphQLString)},
+            text: {type: new GraphQLNonNull(GraphQLString)},
+            sectionID: {type: new GraphQLNonNull(GraphQLString)},
+            url: {type: new GraphQLNonNull(GraphQLString)}
+          },
+          resolve(parent, args) {
+            return Pages.findByIdAndUpdate(
+              args.id,
+              { $set: { name: args.name, text: args.text, sectionID: args.sectionID, url: args.url}},
+              { new: true }
+            );
+          }
+        },
         updateUser: {
             type: UsersType,
             args: {
@@ -186,6 +244,12 @@ const Query = new GraphQLObjectType({
             resolve(parent, args) {
                 return Pages.find({});
             }
+        },
+        slidermp: {
+          type: new GraphQLList(SlidermpType),
+          resolve(parent, args) {
+              return Slidermp.find({});
+          }
         },
         sections: {
             type: new GraphQLList(SectionsType),
@@ -230,6 +294,12 @@ const Query = new GraphQLObjectType({
             resolve(parent,args) {
                 return ComponentNavbar.find({});
             }
+        },
+        test: {
+          type: new GraphQLList(TestType),
+          resolve(parent, args) {
+              return Test.find({});
+          }
         }
     })
 });

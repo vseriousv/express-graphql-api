@@ -1,33 +1,58 @@
 const graphql = require('graphql');
 
-const { GraphQLObjectType, GraphQLString, GraphQLSchema, GraphQLID, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLBoolean} = graphql;
+const { GraphQLObjectType,
+        GraphQLString,
+        GraphQLSchema,
+        GraphQLID,
+        GraphQLInt,
+        GraphQLList,
+        GraphQLNonNull,
+        GraphQLBoolean  } = graphql;
 
 const Users = require('../models/users');
 const Articles = require('../models/articles');
 const Contacts = require('../models/contacts');
 const ComponentNavbar = require('../models/component_navbar');
+const ComponentAdvantage = require('../models/component_advantage');
 const Sections = require('../models/sections');
 const Pages = require('../models/pages');
-const Slidermp = require('../models/slidermp');
-const Test = require('../models/test');
-//ТЕСТИРОВАНИЕ
-const TestType = new GraphQLObjectType({
-    name: 'Test',
+const Mpslides = require('../models/mpslides');
+const Opsection = require('../models/opsections');
+const News = require('../models/news')
+
+//КОЛЛЕКЦИЯ СЕКЦИЙ ДЛЯ МОДУЛЯ "НАША ПРОДУКЦИЯ"
+const OpsectionType = new GraphQLObjectType({
+    name: 'opsection',
     fields: () => ({
         id: {type: GraphQLID},
+        section_id: {type: new GraphQLNonNull(GraphQLString)},
         name: {type: new GraphQLNonNull(GraphQLString)},
-        last: {type: new GraphQLNonNull(GraphQLString)}
-    })
+        text: {type: new GraphQLNonNull(GraphQLString)},
+        classNameActive: {type: new GraphQLNonNull(GraphQLString)},
+        valueCart: {
+            type: new GraphQLList(OpsectitemType)
+        },
+        className: {type: new GraphQLNonNull(GraphQLString)}
+    }),
+});
+//КОЛЛЕКЦИЯ ДОЧЕРНИХ ОБЪЕКТОВ ДЛЯ МОДУЛЯ "НАША ПРОДУКЦИЯ"
+const OpsectitemType = new GraphQLObjectType({
+    name: 'opsecitem',
+    fields: () => ({
+        img: {type: new GraphQLNonNull(GraphQLString)},
+        hCart: {type: new GraphQLNonNull(GraphQLString)},
+        pText: {type: new GraphQLNonNull(GraphQLString)}
+    }),
 });
 //КОЛЛЕКЦИЯ СЛАЙДОВ ГЛАВНОЙ СТРАНИЦЫ
-const SlidermpType = new GraphQLObjectType({
-    name: 'Slidermp',
+const MpslidesType = new GraphQLObjectType({
+    name: 'Mpslides',
     fields: () => ({
         id: {type: GraphQLID},
         name: {type: new GraphQLNonNull(GraphQLString)},
         image: {type: new GraphQLNonNull(GraphQLString)},
-        FirstHeader: {type: new GraphQLNonNull(GraphQLString)},
-        SecondHeader: {type: new GraphQLNonNull(GraphQLString)},
+        firstHeader: {type: new GraphQLNonNull(GraphQLString)},
+        secondHeader: {type: new GraphQLNonNull(GraphQLString)},
         button: {type: new GraphQLNonNull(GraphQLString)},
         url: {type: new GraphQLNonNull(GraphQLString)}
     })
@@ -88,6 +113,25 @@ const ArticlesType = new GraphQLObjectType({
         }
     }),
 });
+//КОЛЛЕКЦИЯ НОВОСТЕЙ
+const NewsType = new GraphQLObjectType({
+    name: 'News',
+    fields: () => ({
+        id: {type: GraphQLID},
+        title: {type: new GraphQLNonNull(GraphQLString)},
+        description: {type: new GraphQLNonNull(GraphQLString)},
+        text: {type: new GraphQLNonNull(GraphQLString)},
+        tags: {type: new GraphQLNonNull(GraphQLString)},
+        dateTimeCreate: {type: new GraphQLNonNull(GraphQLString)},
+        dateTimeUpdate: {type: new GraphQLNonNull(GraphQLString)},
+        author: {
+            type: UsersType,
+            resolve(parent, args){
+               return Users.findById(parent.authorID);
+            }
+        }
+    }),
+});
 //КОЛЛЕКЦИЯ КОНТАКТОВ
 const ContactsType = new GraphQLObjectType({
     name: 'Contacts',
@@ -100,7 +144,7 @@ const ContactsType = new GraphQLObjectType({
     })
 });
 //КОЛЛЕКЦИЯ КОМПОНЕНТОВ
-const ComponentNavbarType = new GraphQLObjectType({
+const ComponentsType = new GraphQLObjectType({
     name: 'components',
     fields: () => ({
         id: {type: GraphQLID},
@@ -118,6 +162,26 @@ const NavbarType = new GraphQLObjectType({
         name: {type: new GraphQLNonNull(GraphQLString)},
         child: {type: new GraphQLNonNull(GraphQLString)},
         link: {type: new GraphQLNonNull(GraphQLString)}
+    }),
+});
+//ТИП ПРЕИМУЩЕСТВ
+const AdvantageType = new GraphQLObjectType({
+    name: 'advantage',
+    fields: () => ({
+      images: {type: new GraphQLNonNull(GraphQLString)},
+      title: {type: new GraphQLNonNull(GraphQLString)},
+      item1: {type: new GraphQLNonNull(GraphQLString)},
+      item11: {type: new GraphQLNonNull(GraphQLString)},
+      item111: {type: new GraphQLNonNull(GraphQLString)},
+      item2: {type: new GraphQLNonNull(GraphQLString)},
+      item22: {type: new GraphQLNonNull(GraphQLString)},
+      item222: {type: new GraphQLNonNull(GraphQLString)},
+      item3: {type: new GraphQLNonNull(GraphQLString)},
+      item33: {type: new GraphQLNonNull(GraphQLString)},
+      item333: {type: new GraphQLNonNull(GraphQLString)},
+      item4: {type: new GraphQLNonNull(GraphQLString)},
+      item44: {type: new GraphQLNonNull(GraphQLString)},
+      item444: {type: new GraphQLNonNull(GraphQLString)}
     }),
 });
 
@@ -245,18 +309,13 @@ const Query = new GraphQLObjectType({
                 return Pages.find({});
             }
         },
-        slidermp: {
-          type: new GraphQLList(SlidermpType),
-          resolve(parent, args) {
-              return Slidermp.find({});
-          }
-        },
         sections: {
             type: new GraphQLList(SectionsType),
             resolve(parent, args) {
                 return Sections.find({});
             }
         },
+
         user: {
             type: UsersType,
             args: { id: { type: GraphQLID } },
@@ -269,6 +328,18 @@ const Query = new GraphQLObjectType({
             args: { id: { type: GraphQLID } },
             resolve(parent, args) {
                 return Articles.findById(args.id);
+            }
+        },
+        news: {
+            type: new GraphQLList(NewsType),
+            resolve(parent, args) {
+                return News.find({});
+            }
+        },
+        mpslides: {
+            type: new GraphQLList(MpslidesType),
+            resolve(parent, args) {
+                return Mpslides.find({});
             }
         },
         users: {
@@ -290,17 +361,24 @@ const Query = new GraphQLObjectType({
             }
         },
         componentNavbar: {
-            type: new GraphQLList(ComponentNavbarType),
+            type: new GraphQLList(ComponentsType),
             resolve(parent,args) {
                 return ComponentNavbar.find({});
             }
         },
-        test: {
-          type: new GraphQLList(TestType),
-          resolve(parent, args) {
-              return Test.find({});
-          }
-        }
+        componentAdvantage: {
+            type: AdvantageType,
+            args: { id: { type: GraphQLID } },
+            resolve(parent, args) {
+                return ComponentAdvantage.findById(args.id);
+            }
+        },
+        opsection: {
+            type: new GraphQLList(OpsectionType),
+            resolve(parent,args) {
+                return Opsection.find({});
+            }
+        },
     })
 });
 

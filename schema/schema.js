@@ -18,7 +18,10 @@ const Sections = require('../models/sections');
 const Pages = require('../models/pages');
 const Mpslides = require('../models/mpslides');
 const Opsection = require('../models/opsections');
-const News = require('../models/news')
+const News = require('../models/news');
+const Printspreviewblocks = require('../models/printspreviewblocks');
+const Printsadvantagecardblocks = require('../models/printsadvantagecardblocks');
+const Productionportfoliocarts = require('../models/productionportfoliocarts');
 
 //КОЛЛЕКЦИЯ СЕКЦИЙ ДЛЯ МОДУЛЯ "НАША ПРОДУКЦИЯ"
 const OpsectionType = new GraphQLObjectType({
@@ -184,11 +187,63 @@ const AdvantageType = new GraphQLObjectType({
       item444: {type: new GraphQLNonNull(GraphQLString)}
     }),
 });
+//КОЛЛЕКЦИЯ БЛОКА ПРИВЕТСТВИЯ НА СТРАНИЦЕ ПЕЧАТНОЙ ПРОДУКЦИИ
+const PrintspreviewblocksType = new GraphQLObjectType({
+    name: 'Printspreviewblocks',
+    fields: () => ({
+        id: {type: GraphQLID},
+        img: {type: new GraphQLNonNull(GraphQLString)},
+        opsection: {
+            type: OpsectionType,
+            resolve(parent, args){
+               return Opsection.findById(parent.opsectionid);
+            }
+        },
+        titlepage: {type: new GraphQLNonNull(GraphQLString)},
+        subtext_1: {type: new GraphQLNonNull(GraphQLString)},
+        subtext_2: {type: new GraphQLNonNull(GraphQLString)},
+        subtext_3: {type: new GraphQLNonNull(GraphQLString)},
+        button_1: {type: new GraphQLNonNull(GraphQLString)},
+        url_btn_1: {type: new GraphQLNonNull(GraphQLString)},
+        button_2: {type: new GraphQLNonNull(GraphQLString)},
+        url_btn_2: {type: new GraphQLNonNull(GraphQLString)},
+        url: {type: new GraphQLNonNull(GraphQLString)}
+    }),
+});
+//КОЛЛЕКЦИЯ БЛОКА ПРЕИМУЩЕСТВ ПРОДУКТОВОЙ СТРАНИЦЫ
+const PrintsadvantagecardblockType = new GraphQLObjectType({
+    name: 'Printsadvantagecardblocks',
+    fields: () => ({
+        id: {type: GraphQLID},
+        title: {type: new GraphQLNonNull(GraphQLString)},
+        cart_1_img: {type: new GraphQLNonNull(GraphQLString)},
+        cart_1_header: {type: new GraphQLNonNull(GraphQLString)},
+        cart_1_text: {type: new GraphQLNonNull(GraphQLString)},
+        cart_2_img: {type: new GraphQLNonNull(GraphQLString)},
+        cart_2_header: {type: new GraphQLNonNull(GraphQLString)},
+        cart_2_text: {type: new GraphQLNonNull(GraphQLString)},
+        cart_3_img: {type: new GraphQLNonNull(GraphQLString)},
+        cart_3_header: {type: new GraphQLNonNull(GraphQLString)},
+        cart_3_text: {type: new GraphQLNonNull(GraphQLString)},
+        url: {type: new GraphQLNonNull(GraphQLString)}
+    }),
+});
+//КОЛЛЕКЦИЯ БЛОКА ПОРТФОЛИО ДЛЯ ПРОДУКТОВЫХ СТРАНИЦ
+const ProductionportfoliocartType = new GraphQLObjectType({
+    name: 'Productionportfoliocarts',
+    fields: () => ({
+        id: {type: GraphQLID},
+        img: {type: new GraphQLNonNull(GraphQLString)},
+        header: {type: new GraphQLNonNull(GraphQLString)},
+        text: {type: new GraphQLNonNull(GraphQLString)},
+        url: {type: new GraphQLNonNull(GraphQLString)}
+    }),
+});
 
 const Mutation = new GraphQLObjectType({
     name: 'Mutattion',
     fields: {
-      addPages:{
+        addPages:{
         type: PagesType,
         args: {
           name: {type: new GraphQLNonNull(GraphQLString)},
@@ -309,13 +364,19 @@ const Query = new GraphQLObjectType({
                 return Pages.find({});
             }
         },
+        page: {
+            type: PagesType,
+            args: { url: { type: GraphQLString } },
+            resolve(parent, args) {
+                return Pages.findOne({ url: args.url})
+            }
+        },
         sections: {
             type: new GraphQLList(SectionsType),
             resolve(parent, args) {
                 return Sections.find({});
             }
         },
-
         user: {
             type: UsersType,
             args: { id: { type: GraphQLID } },
@@ -328,6 +389,27 @@ const Query = new GraphQLObjectType({
             args: { id: { type: GraphQLID } },
             resolve(parent, args) {
                 return Articles.findById(args.id);
+            }
+        },
+        printspreviewblock: {
+            type: PrintspreviewblocksType,
+            args: { url: { type: GraphQLString } },
+            resolve(parent, args) {
+                return Printspreviewblocks.findOne({ url: args.url})
+            }
+        },
+        printsadvantagecardblock: {
+            type: PrintsadvantagecardblockType,
+            args: { url: { type: GraphQLString } },
+            resolve(parent, args) {
+                return Printsadvantagecardblocks.findOne({ url: args.url})
+            }
+        },
+        productionportfoliocart: {
+            type: new GraphQLList(ProductionportfoliocartType),
+            args: { url: { type: GraphQLString } },
+            resolve(parent, args) {
+                return Productionportfoliocarts.find({ url: args.url})
             }
         },
         news: {

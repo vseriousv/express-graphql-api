@@ -9,17 +9,17 @@ const PORT = 3001;
 
 mongoose.connect('mongodb://vseriousv:social123@localhost:27017/aidaprint', { useNewUrlParser: true });
 
-app.use('/graphql', graphqlHTTP({
+app.use(cors());
+
+app.use('/graphql',cors(), graphqlHTTP({
     schema,
     graphiql: true
 }));
-
-app.use(cors());
 
 const dbConnection = mongoose.connection;
 dbConnection.on('error', err => console.log(`Connection error: ${err}`));
 dbConnection.once('open', () => console.log('Connection to DB!'));
 
 app.listen(PORT, err => {
-    err ? console.log(error) : console.log('Server started!');
+    err ? console.log(error) : console.log('Server started on port -'+PORT);
 })

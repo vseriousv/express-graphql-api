@@ -22,6 +22,7 @@ const News = require('../models/news');
 const Printspreviewblocks = require('../models/printspreviewblocks');
 const Printsadvantagecardblocks = require('../models/printsadvantagecardblocks');
 const Productionportfoliocarts = require('../models/productionportfoliocarts');
+const Allfiles = require('../models/allfiles');
 
 //КОЛЛЕКЦИЯ СЕКЦИЙ ДЛЯ МОДУЛЯ "НАША ПРОДУКЦИЯ"
 const OpsectionType = new GraphQLObjectType({
@@ -99,6 +100,16 @@ const UsersType = new GraphQLObjectType({
                 return Articles.find({ authorID: parent.id });
             }
         }
+    })
+});
+//КОЛЛЕКЦИЯ ПОЛЬЗОВАТЕЛЕЙ
+const AllFilesType = new GraphQLObjectType({
+    name: 'Allfiles',
+    fields: () => ({
+        id: {type: GraphQLID},
+        name: {type: new GraphQLNonNull(GraphQLString)},
+        type: {type: new GraphQLNonNull(GraphQLString)},
+        path: {type: new GraphQLNonNull(GraphQLString)}
     })
 });
 //КОЛЛЕКЦИЯ СТАТЕЙ
@@ -192,22 +203,26 @@ const PrintspreviewblocksType = new GraphQLObjectType({
     name: 'Printspreviewblocks',
     fields: () => ({
         id: {type: GraphQLID},
-        img: {type: new GraphQLNonNull(GraphQLString)},
+        img: {
+          type: AllFilesType,
+          resolve(parent, args){
+          return Allfiles.findById(parent.img);
+        }},
         opsection: {
             type: OpsectionType,
             resolve(parent, args){
                return Opsection.findById(parent.opsectionid);
             }
         },
-        titlepage: {type: new GraphQLNonNull(GraphQLString)},
-        subtext_1: {type: new GraphQLNonNull(GraphQLString)},
-        subtext_2: {type: new GraphQLNonNull(GraphQLString)},
-        subtext_3: {type: new GraphQLNonNull(GraphQLString)},
-        button_1: {type: new GraphQLNonNull(GraphQLString)},
-        url_btn_1: {type: new GraphQLNonNull(GraphQLString)},
-        button_2: {type: new GraphQLNonNull(GraphQLString)},
-        url_btn_2: {type: new GraphQLNonNull(GraphQLString)},
-        url: {type: new GraphQLNonNull(GraphQLString)}
+        titlepage: {type: GraphQLString},
+        subtext_1: {type: GraphQLString},
+        subtext_2: {type: GraphQLString},
+        subtext_3: {type: GraphQLString},
+        button_1: {type: GraphQLString},
+        url_btn_1: {type: GraphQLString},
+        button_2: {type: GraphQLString},
+        url_btn_2: {type: GraphQLString},
+        url: {type: GraphQLString},
     }),
 });
 //КОЛЛЕКЦИЯ БЛОКА ПРЕИМУЩЕСТВ ПРОДУКТОВОЙ СТРАНИЦЫ
@@ -291,6 +306,38 @@ const Mutation = new GraphQLObjectType({
                 return user.save();
             }
         },
+        addPrintspreviewblock:{
+          type: PrintspreviewblocksType,
+          args: {
+            img: {type: GraphQLString},
+            opsectionid: {type: GraphQLString},
+            titlepage: {type: GraphQLString},
+            subtext_1: {type: GraphQLString},
+            subtext_2: {type: GraphQLString},
+            subtext_3: {type: GraphQLString},
+            button_1: {type: GraphQLString},
+            url_btn_1: {type: GraphQLString},
+            button_2: {type: GraphQLString},
+            url_btn_2: {type: GraphQLString},
+            url: {type: GraphQLString},
+          },
+          resolve(parent, args) {
+              const printspreviewblock = new Printspreviewblocks({
+                img: args.img,
+                opsectionid: args.opsectionid,
+                titlepage: args.titlepage,
+                subtext_1: args.subtext_1,
+                subtext_2: args.subtext_2,
+                subtext_3: args.subtext_3,
+                button_1: args.button_1,
+                url_btn_1: args.url_btn_1,
+                button_2: args.button_2,
+                url_btn_2: args.url_btn_2,
+                url: args.url
+              });
+              return printspreviewblock.save();
+          }
+        },
         removeUser: {
             type: UsersType,
             args: { id: { type: GraphQLID } },
@@ -304,6 +351,13 @@ const Mutation = new GraphQLObjectType({
             resolve(parent, args) {
                 return Articles.findByIdAndRemove(args.id);
             }
+        },
+        removePrintspreviewblock:{
+          type: PrintspreviewblocksType,
+          args: { id: { type: GraphQLID } },
+          resolve(parent, args) {
+              return Printspreviewblocks.findByIdAndRemove(args.id);
+          }
         },
         updatePage:{
           type: PagesType,
@@ -346,11 +400,62 @@ const Mutation = new GraphQLObjectType({
             },
             resolve(parent, args) {
                 return Articles.findByIdAndUpdate(
-                    args.id,
-                    { $set: { title: args.title, description: args.description} },
-                    { new: true }
+                  args.id,
+                  { $set: { title: args.title, description: args.description} },
+                  { new: true }
                 );
             }
+        },
+        updateContactsPhone: {
+          type: ContactsType,
+          args: {
+            id: { type: GraphQLID },
+            title: {type: new GraphQLNonNull(GraphQLString) },
+            type: {type: new GraphQLNonNull(GraphQLString) },
+            context_1: {type: new GraphQLNonNull(GraphQLString) },
+            context_2: {type: new GraphQLNonNull(GraphQLString) }
+          },
+          resolve(parent, args) {
+            return Contacts.findByIdAndUpdate(
+              args.id,
+              { $set: { title: args.title, type: args.type, context_1: args.context_1, context_2: args.context_2 } },
+              { new: true }
+            );
+          }
+        },
+        updatePrintspreviewblock:{
+          type: PrintspreviewblocksType,
+          args: {
+            id: { type: GraphQLID },
+            img: {type: GraphQLString},
+            opsectionid: {type: GraphQLString},
+            titlepage: {type: GraphQLString},
+            subtext_1: {type: GraphQLString},
+            subtext_2: {type: GraphQLString},
+            subtext_3: {type: GraphQLString},
+            button_1: {type: GraphQLString},
+            url_btn_1: {type: GraphQLString},
+            button_2: {type: GraphQLString},
+            url_btn_2: {type: GraphQLString},
+            url: {type: GraphQLString},
+          },
+          resolve(parent, args) {
+            return Printspreviewblocks.findByIdAndUpdate(
+              args.id,
+              { $set: { img: args.img,
+                        opsectionid: args.opsectionid,
+                        titlepage: args.titlepage,
+                        subtext_1: args.subtext_1,
+                        subtext_2: args.subtext_2,
+                        subtext_3: args.subtext_3,
+                        button_1: args.button_1,
+                        url_btn_1: args.url_btn_1,
+                        button_2: args.button_2,
+                        url_btn_2: args.url_btn_2,
+                        url: args.url}},
+              { new: true }
+            );
+          }
         },
     }
 });
@@ -363,6 +468,19 @@ const Query = new GraphQLObjectType({
             resolve(parent, args) {
                 return Pages.find({});
             }
+        },
+        allfiles: {
+            type: new GraphQLList(AllFilesType),
+            resolve(parent, args) {
+                return Allfiles.find({});
+            }
+        },
+        imagefiles: {
+          type: new GraphQLList(AllFilesType),
+          args: { type: { type: GraphQLString } },
+          resolve(parent, args) {
+              return Allfiles.find({ type: args.type})
+          }
         },
         page: {
             type: PagesType,
@@ -396,6 +514,12 @@ const Query = new GraphQLObjectType({
             args: { url: { type: GraphQLString } },
             resolve(parent, args) {
                 return Printspreviewblocks.findOne({ url: args.url})
+            }
+        },
+        printspreviewblocks: {
+            type: new GraphQLList(PrintspreviewblocksType),
+            resolve(parent, args) {
+                return Printspreviewblocks.find({});
             }
         },
         printsadvantagecardblock: {
@@ -440,6 +564,13 @@ const Query = new GraphQLObjectType({
             type: new GraphQLList(ContactsType),
             resolve(parent, args) {
                 return Contacts.find({});
+            }
+        },
+        contactsphone: {
+            type: new GraphQLList(ContactsType),
+            args: { type: { type: GraphQLString } },
+            resolve(parent, args) {
+                return Contacts.find({ type: args.type})
             }
         },
         componentNavbar: {

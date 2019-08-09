@@ -206,7 +206,7 @@ const PrintspreviewblocksType = new GraphQLObjectType({
         img: {
           type: AllFilesType,
           resolve(parent, args){
-          return Allfiles.findById(parent.img);
+          return Allfiles.findById(parent.imgid);
         }},
         opsection: {
             type: OpsectionType,
@@ -248,10 +248,10 @@ const ProductionportfoliocartType = new GraphQLObjectType({
     name: 'Productionportfoliocarts',
     fields: () => ({
         id: {type: GraphQLID},
-        img: {type: new GraphQLNonNull(GraphQLString)},
-        header: {type: new GraphQLNonNull(GraphQLString)},
-        text: {type: new GraphQLNonNull(GraphQLString)},
-        url: {type: new GraphQLNonNull(GraphQLString)}
+        img: {type: GraphQLString},
+        header: {type: GraphQLString},
+        text: {type: GraphQLString},
+        url: {type: GraphQLString}
     }),
 });
 
@@ -370,6 +370,24 @@ const Mutation = new GraphQLObjectType({
               return printsadvantagecardblock.save();
           }
         },
+        addProductionportfoliocart:{
+          type: ProductionportfoliocartType,
+          args: {
+            img: {type: GraphQLString},
+            header: {type: GraphQLString},
+            text: {type: GraphQLString},
+            url: {type: GraphQLString}
+          },
+          resolve(parent, args) {
+              const productionportfoliocart = new Productionportfoliocarts({
+                img: args.img,
+                header: args.header,
+                text: args.text,
+                url: args.url
+              });
+              return productionportfoliocart.save();
+          }
+        },
         removeUser: {
             type: UsersType,
             args: { id: { type: GraphQLID } },
@@ -396,6 +414,13 @@ const Mutation = new GraphQLObjectType({
           args: { id: { type: GraphQLID } },
           resolve(parent, args) {
               return Printsadvantagecardblocks.findByIdAndRemove(args.id);
+          }
+        },
+        removeProductionportfoliocart:{
+          type: ProductionportfoliocartType,
+          args: { id: { type: GraphQLID } },
+          resolve(parent, args) {
+              return Productionportfoliocarts.findByIdAndRemove(args.id);
           }
         },
         updatePage:{
@@ -531,6 +556,27 @@ const Mutation = new GraphQLObjectType({
             );
           }
         },
+        updateProductionportfoliocart:{
+          type: ProductionportfoliocartType,
+          args: {
+            id: { type: GraphQLID },
+            img: {type: GraphQLString},
+            header: {type: GraphQLString},
+            text: {type: GraphQLString},
+            url: {type: GraphQLString}
+          },
+          resolve(parent, args) {
+            return Productionportfoliocarts.findByIdAndUpdate(
+              args.id,
+              { $set: {
+                img: args.img,
+                header: args.header,
+                text: args.text,
+                url: args.url}},
+              { new: true }
+            );
+          }
+        },
     }
 });
 
@@ -614,6 +660,12 @@ const Query = new GraphQLObjectType({
             args: { url: { type: GraphQLString } },
             resolve(parent, args) {
                 return Productionportfoliocarts.find({ url: args.url})
+            }
+        },
+        productionportfoliocarts: {
+            type: new GraphQLList(ProductionportfoliocartType),
+            resolve(parent, args) {
+                return Productionportfoliocarts.find({})
             }
         },
         news: {

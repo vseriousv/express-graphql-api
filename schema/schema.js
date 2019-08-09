@@ -230,17 +230,17 @@ const PrintsadvantagecardblockType = new GraphQLObjectType({
     name: 'Printsadvantagecardblocks',
     fields: () => ({
         id: {type: GraphQLID},
-        title: {type: new GraphQLNonNull(GraphQLString)},
-        cart_1_img: {type: new GraphQLNonNull(GraphQLString)},
-        cart_1_header: {type: new GraphQLNonNull(GraphQLString)},
-        cart_1_text: {type: new GraphQLNonNull(GraphQLString)},
-        cart_2_img: {type: new GraphQLNonNull(GraphQLString)},
-        cart_2_header: {type: new GraphQLNonNull(GraphQLString)},
-        cart_2_text: {type: new GraphQLNonNull(GraphQLString)},
-        cart_3_img: {type: new GraphQLNonNull(GraphQLString)},
-        cart_3_header: {type: new GraphQLNonNull(GraphQLString)},
-        cart_3_text: {type: new GraphQLNonNull(GraphQLString)},
-        url: {type: new GraphQLNonNull(GraphQLString)}
+        title: {type: GraphQLString},
+        cart_1_img: {type: GraphQLString},
+        cart_1_header: {type: GraphQLString},
+        cart_1_text: {type: GraphQLString},
+        cart_2_img: {type: GraphQLString},
+        cart_2_header: {type: GraphQLString},
+        cart_2_text: {type: GraphQLString},
+        cart_3_img: {type: GraphQLString},
+        cart_3_header: {type: GraphQLString},
+        cart_3_text: {type: GraphQLString},
+        url:{type: GraphQLString},
     }),
 });
 //КОЛЛЕКЦИЯ БЛОКА ПОРТФОЛИО ДЛЯ ПРОДУКТОВЫХ СТРАНИЦ
@@ -338,6 +338,38 @@ const Mutation = new GraphQLObjectType({
               return printspreviewblock.save();
           }
         },
+        addPrintsadvantagecardblock:{
+          type: PrintsadvantagecardblockType,
+          args: {
+            title: {type: GraphQLString},
+            cart_1_img: {type: GraphQLString},
+            cart_1_header: {type: GraphQLString},
+            cart_1_text: {type: GraphQLString},
+            cart_2_img: {type: GraphQLString},
+            cart_2_header: {type: GraphQLString},
+            cart_2_text: {type: GraphQLString},
+            cart_3_img: {type: GraphQLString},
+            cart_3_header: {type: GraphQLString},
+            cart_3_text: {type: GraphQLString},
+            url:{type: GraphQLString},
+          },
+          resolve(parent, args) {
+              const printsadvantagecardblock = new Printsadvantagecardblocks({
+                title: args.title,
+                cart_1_img: args.cart_1_img,
+                cart_1_header: args.cart_1_header,
+                cart_1_text: args.cart_1_text,
+                cart_2_img: args.cart_2_img,
+                cart_2_header: args.cart_2_header,
+                cart_2_text: args.cart_2_text,
+                cart_3_img: args.cart_3_img,
+                cart_3_header: args.cart_3_header,
+                cart_3_text: args.cart_3_text,
+                url: args.url
+              });
+              return printsadvantagecardblock.save();
+          }
+        },
         removeUser: {
             type: UsersType,
             args: { id: { type: GraphQLID } },
@@ -357,6 +389,13 @@ const Mutation = new GraphQLObjectType({
           args: { id: { type: GraphQLID } },
           resolve(parent, args) {
               return Printspreviewblocks.findByIdAndRemove(args.id);
+          }
+        },
+        removePrintsadvantagecardblock:{
+          type: PrintsadvantagecardblockType,
+          args: { id: { type: GraphQLID } },
+          resolve(parent, args) {
+              return Printsadvantagecardblocks.findByIdAndRemove(args.id);
           }
         },
         updatePage:{
@@ -457,6 +496,41 @@ const Mutation = new GraphQLObjectType({
             );
           }
         },
+        updatePrintsadvantagecardblock:{
+          type: PrintsadvantagecardblockType,
+          args: {
+            id: { type: GraphQLID },
+            title: {type: GraphQLString},
+            cart_1_img: {type: GraphQLString},
+            cart_1_header: {type: GraphQLString},
+            cart_1_text: {type: GraphQLString},
+            cart_2_img: {type: GraphQLString},
+            cart_2_header: {type: GraphQLString},
+            cart_2_text: {type: GraphQLString},
+            cart_3_img: {type: GraphQLString},
+            cart_3_header: {type: GraphQLString},
+            cart_3_text: {type: GraphQLString},
+            url:{type: GraphQLString},
+          },
+          resolve(parent, args) {
+            return Printsadvantagecardblocks.findByIdAndUpdate(
+              args.id,
+              { $set: {
+                  title: args.title,
+                  cart_1_img: args.cart_1_img,
+                  cart_1_header: args.cart_1_header,
+                  cart_1_text: args.cart_1_text,
+                  cart_2_img: args.cart_2_img,
+                  cart_2_header: args.cart_2_header,
+                  cart_2_text: args.cart_2_text,
+                  cart_3_img: args.cart_3_img,
+                  cart_3_header: args.cart_3_header,
+                  cart_3_text: args.cart_3_text,
+                  url: args.url}},
+              { new: true }
+            );
+          }
+        },
     }
 });
 
@@ -527,6 +601,12 @@ const Query = new GraphQLObjectType({
             args: { url: { type: GraphQLString } },
             resolve(parent, args) {
                 return Printsadvantagecardblocks.findOne({ url: args.url})
+            }
+        },
+        printsadvantagecardblocks: {
+            type: new GraphQLList(PrintsadvantagecardblockType),
+            resolve(parent, args) {
+                return Printsadvantagecardblocks.find({})
             }
         },
         productionportfoliocart: {

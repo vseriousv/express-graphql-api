@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const printspreviewblockSchema = new Schema({
-      img: String,
+      imgid: String,
       opsectionid: String,
       titlepage: String,
       subtext_1: String,

@@ -309,7 +309,7 @@ const Mutation = new GraphQLObjectType({
         addPrintspreviewblock:{
           type: PrintspreviewblocksType,
           args: {
-            img: {type: GraphQLString},
+            imgid: {type: GraphQLString},
             opsectionid: {type: GraphQLString},
             titlepage: {type: GraphQLString},
             subtext_1: {type: GraphQLString},
@@ -323,7 +323,7 @@ const Mutation = new GraphQLObjectType({
           },
           resolve(parent, args) {
               const printspreviewblock = new Printspreviewblocks({
-                img: args.img,
+                imgid: args.imgid,
                 opsectionid: args.opsectionid,
                 titlepage: args.titlepage,
                 subtext_1: args.subtext_1,
